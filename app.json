@@ -1,4 +1,21 @@
 {
-  "name": "hello",
-  "displayName": "hello"
+  "expo": {
+    "name": "hello",
+    "description": "hello",
+    "slug": "hello",
+    "privacy": "public",
+    "sdkVersion": "25.0.0",
+    "platforms": ["ios", "android"],
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "",
+    "splash": {
+      "image": "",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    }
+  }
 }

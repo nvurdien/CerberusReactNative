@@ -1,5 +1,8 @@
 import React from 'react';
-import {AppRegistry, Button, registerComponent, StyleSheet, Text, TouchableHighlight, View} from 'react-native';
+import {
+    AppRegistry, Button, FlatList, ListView, registerComponent, ScrollView, StyleSheet, Text, TouchableHighlight,
+    View
+} from 'react-native';
 // import {AudioRecorder,AudioUtils} from 'react-native-audio';
 // import {
 //     Player,
@@ -21,13 +24,35 @@ export default class App extends React.Component {
             timestamp: null,
             accuracy: null,
             uuid: null,
+            messages: [],
+            last_time: new Date(),
+            current_time: Date.now(),
         }
     }
 
     onFirstPage = () => {
         this.setState({
-            count: 2
+            count: 2,
         })
+        fetch('http://127.0.0.1:5000/new_message', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                uuid: this.state.uuid
+            }),
+        }).then((uuidID) => {
+            console.log(JSON.parse(uuidID._bodyText));
+            var jsonFile = JSON.parse(uuidID._bodyText);
+            console.log(jsonFile.uuid)
+            this.setState({
+                uuid: jsonFile.uuid,
+            });
+        }).catch((e) => {
+            console.log(`ERROR: ${e}`);
+        });
     };
 
     onDanger = () => {
@@ -67,13 +92,59 @@ export default class App extends React.Component {
         }).catch((e) => {
             console.log(`ERROR: ${e}`);
         });
-        // let audioPath = AudioUtils.DocumentDirectoryPath + '/test.aac';
-        // AudioRecorder.prepareRecordingAtPath(audioPath, {
-        //     SampleRate: 22050,
-        //     Channels: 1,
-        //     AudioQuality: "Low",
-        //     AudioEncoding: "aac"
-        // });
+
+    };
+
+    onSafe = () => {
+        this.setState({
+            count: 3,
+        });
+        fetch('http://127.0.0.1:5000/new_message', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                uuid: this.state.uuid
+            }),
+        }).then((uuidID) => {
+            console.log(JSON.parse(uuidID._bodyText));
+            var jsonFile = JSON.parse(uuidID._bodyText);
+            console.log(jsonFile.uuid)
+            this.setState({
+                uuid: jsonFile.uuid,
+            });
+        }).catch((e) => {
+            console.log(`ERROR: ${e}`);
+        });
+    };
+
+    componentDidMount(){
+        this.timer = setInterval(()=> this.updateInfo(), 500)
+    }
+
+    async updateInfo() {
+        fetch('http://127.0.0.1:5000/message', {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                }),
+            }).then((uuidID) => {
+                // console.log(JSON.parse(uuidID._bodyText));
+                var jsonFile = JSON.parse(uuidID._bodyText);
+                // console.log(jsonFile.messages)
+                this.setState({
+                    messages: jsonFile,
+                    last_time: Date.now(),
+                });
+            console.log(this.state.messages)
+            }).catch((e) => {
+                console.log(`ERROR: ${e}`);
+            });
 
     };
 
@@ -84,16 +155,11 @@ export default class App extends React.Component {
 
     };
 
-    onSafe = () => {
-        this.setState({
-            count: 3,
-        })
-    };
-
     render() {
         if(this.state.count === 1)
             return (
-                <View style={styles.container}>
+                <View style={styles.containerOne}>
+                    <Text style={styles.firstText}>CERBERUS Emergency Response</Text>
                     <TouchableHighlight
                         style={styles.firstButton}
                         onPress={this.onFirstPage}
@@ -104,40 +170,64 @@ export default class App extends React.Component {
             );
         else if(this.state.count === 2)
             return (
-                <View style={styles.container}>
+                <View style={styles.containerTwo}>
+                    <Text style={{
+                        color: "white",
+                        textAlign: "center",
+                        fontSize: 50,
+                        marginTop: 0,
+                        top: 0,
+                        padding: 10,
+                        marginBottom:30
+                    }}>Is the intruder near you?</Text>
                     <TouchableHighlight
                         style={styles.safeText}
                         onPress={this.onSafe}
-                    >
-                        <Text style={styles.secondText}>I'm Safe</Text>
+                    ><Text style={styles.secondText}>No, I'm not in imminent danger</Text>
                     </TouchableHighlight>
                     <TouchableHighlight
-                        style={styles.firstButton}
+                        style={styles.secondButton}
                         onPress={this.onDanger}
-                    >
-                        <Text style={styles.secondText}>Shooter Nearby</Text>
+                    ><Text style={styles.secondText}>Yes, the shooter is nearby</Text>
                     </TouchableHighlight>
                 </View>
             );
         else if(this.state.count === 3){
             return (
-                <View style={styles.container}>
+                <View style={styles.containerTwo}>
+                    <Text style={{fontSize: 30, color: 'white'}}>How to protect yourself</Text>
+                    <ScrollView>
+                        {
+                            Object.keys(this.state.messages).map((item, index) => (<View style={{
+                                backgroundColor: 'red', borderRadius: 90
+                            }}>
 
-                    <Text style={styles.secondText}>Message Board</Text>
+                                <Text key={index} style={{
+                                    color: 'white',
+                                    fontSize: 20,
+                                    padding: 10
+                                }}>{this.state.messages[item]}
+                                </Text></View>))
 
+                        }
+
+                    </ScrollView>
                     <TouchableHighlight
-                        style={styles.firstButton}
+                        style={styles.secondButton}
                         onPress={this.onDanger}
                     >
-                        <Text style={styles.secondText}>Shooter Nearby</Text>
+                        <Text style={styles.secondText}>The intruder is nearby</Text>
                     </TouchableHighlight>
+                    <Text style={styles.noDisplay}>
+                        {console.log("updated")}
+                    </Text>
                 </View>
-            )
+            );
         }
-        else {
+        else if(this.state.count === 4){
             return (
-                <View style={styles.container}>
-                    <Text style={styles.firstText}>TAKE COVER!
+                <View style={styles.containerOne}>
+                    <Text style={styles.firstText}>Throw a chair at the intruder
                     </Text>
                     <Text style={styles.noDisplay}> {setTimeout(this.offDanger, 5000)}</Text>
                 </View>
@@ -149,35 +239,53 @@ export default class App extends React.Component {
 AppRegistry.registerComponent('App', () => App)
 
 const styles = StyleSheet.create({
-    container: {
+    containerOne: {
         flex: 1,
         backgroundColor: '#000',
-        alignItems: 'center',
-        justifyContent: 'center',
+        paddingTop: 100
+    },
+    containerTwo: {
+        flex: 1,
+        backgroundColor: '#000',
+        paddingTop: 30
     },
     firstButton: {
         backgroundColor: 'red',
         borderRadius: 90,
-        padding: 30
+        padding: 30,
+        margin: 30,
+        marginTop: 70,
+        borderWidth: 5,
+        borderColor: "white"
     },
     firstText: {
         color: 'white',
-        fontSize: 95,
-        textAlign: 'center'
+        fontSize: 45,
+        textAlign: 'center',
     },
     safeText: {
         backgroundColor: 'green',
-        marginBottom: 50
+        marginTop: 50,
+        marginBottom: 20,
+        borderRadius: 90,
+        margin: 30,
+        borderWidth: 5,
+        borderColor: "white",
+        padding: 10
     },
     secondButton: {
         backgroundColor: 'red',
         borderRadius: 90,
-        paddingTop: 0
+        margin: 30,
+        padding: 20,
+        borderWidth: 5,
+        borderColor: "white"
     },
     secondText: {
         color: 'white',
-        fontSize: 80,
-        textAlign: 'center'
+        fontSize: 30,
+        textAlign: 'center',
+        borderRadius: 90
     },
     noDisplay: {
         display: 'none'

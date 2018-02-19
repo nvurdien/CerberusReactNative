@@ -12,6 +12,7 @@
     "react-native": "0.53.0",
     "react-native-audio": "^3.6.0",
     "react-native-audio-toolkit": "^1.0.6",
+    "react-native-message-bubble": "^1.0.6",
     "react-native-sound-recorder": "^1.1.1"
   },
   "devDependencies": {
